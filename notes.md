@@ -157,34 +157,44 @@ Git looks a lot like a file system: it has blobs (content), trees (directories).
 
 ## Branches demystified
 
-Git normally put branches inside .git/refs/heads/, if we check the content of the current branch (master), there is only one hashcode, which is the hash of the last commit `31a2e5bbf2cf20f3611fc72ec12c30345d20c17a`
+Git normally put branches inside `.git/refs/heads/`, if we check the content of the current branch (master) saved in the file `.git/refs/heads/master`, in plain text (with `cat`), there is only one hashcode, which is the hash of the last commit `31a2e5bbf2cf20f3611fc72ec12c30345d20c17a`
 
-- `git cat-file -p master` or `git cat-file -p 31a2e5bbf2cf20f3611fc72ec12c30345d20c17a`
+Let's look at the content of that object:
 
-		`tree 10348310cc1bebf0a8e25c9a80097153a6944baf`  
-		`parent c7141b524051805b0b2439dd78923fc29e125e46`  
-		`author autorName <autor@email.com> 1491220803 +0200`  
-		`committer autorName <autor@email.com> 1491220803 +0200`
+```
+$ git cat-file -p 31a2e5bbf2cf20f3611fc72ec12c30345d20c17a
+tree 10348310cc1bebf0a8e25c9a80097153a6944baf
+parent c7141b524051805b0b2439dd78923fc29e125e46
+author autorName <autor@email.com> 1491220803 +0200
+committer autorName <autor@email.com> 1491220803 +0200
+```
 
-(more notes on Git course)
-		
-**Branches are just simple references.**
+**Branches are just simple references**. So, `master` is a reference to the latest commit, for example.
+
 Git knows always in which branch we are, the file *.git/HEAD* contains a line that defines our current branch:  
 `ref: refs/heads/master`
 
-**HEAD is just a reference to a branch.**
+**HEAD is just a reference to a branch**
 
-To change our branch we have to make a checkout:`git checkout <branchName>`
+To change our branch we have to make a checkout: `git checkout <branchName>`
 	
-- `git checkout` makes 2 things (move head and update working area):  
-    1. Git changes its HEAD and link it to <branchName> branch.
-    2. Our working area changes to the state where the new branch was pointing at.	
-- `git merge`: three rules
-	1. The current branch tracks new commits.
-	2. When you make another commit, Git updates your working directory.
-	3. Unreachable objects are **garbage collected**. Git checks for commits that are no longer accessible, it means, no other element points to its hashcode.
-		
-## REBASING
+`git checkout` makes 2 things (move head and update working area):  
+
+1. Git changes HEAD and link it to <branchName> branch.
+2. Our working area changes to the state where the new branch was pointing at.	
+
+Merge is a commit, but it's a commit with two parent commits. Of course, both parent commits are the commits we want to merge.
+
+Fast-forward merge: it happens when git detects it can do a merge withuot creating new objects, because there are merge commits that contain the changes we want to merge.
+
+Three rules in git:
+
+1. The current branch tracks new commits.
+2. When you move to another commit, Git updates your working directory.
+3. Unreachable objects are **garbage collected** (commits done in detached HEAD). Git checks for commits that are no longer accessible, it means, no other element points to its hashcode (branch or tag)
+
+## Rebasing made simple
+
 - `git rebase <branchToRebase>`:
 	1. Rebase looks for the first commit in <branchToRebase> that is also referenced in our current branch, all previous commits are shared in both branches.
 	2. Git detach the current branch from the common commit and attach to the <branchToRebase> branch.

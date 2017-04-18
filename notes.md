@@ -195,48 +195,48 @@ Three rules in git:
 
 ## Rebasing made simple
 
-- `git rebase <branchToRebase>`:
-	1. Rebase looks for the first commit in <branchToRebase> that is also referenced in our current branch, all previous commits are shared in both branches.
-	2. Git detach the current branch from the common commit and attach to the <branchToRebase> branch.
-	3. Now our current branch contains all the commits done while working on it PLUS the commits done in the <branchToRebase> branch.
+`git rebase <branch-to-rebase>`:
 
-But this is not 100% true. Objects in Git are unmutable, so if we detach a branch and attach to another commit, the content of the branch changes so its hashcode had to change as well, and this is not possible in Git because our current branch still points to the same commit.
+1. Rebase looks for the first commit in <brach-to-rebase> that is also referenced in our current branch, all previous commits are shared in both branches. It means, it looks for the base commit for both branches
+2. Git detach the current branch from the common commit and attach to the top commit of <branch-to-rebase> branch.
+3. Now our current branch contains all the commits done while working on it PLUS the commits done in the <branch-to-rebase> branch.
+
+But this is not 100% true. **Objects in Git are unmutable**, so if we detach a branch and attach to another commit, the content of the branch changes so its hashcode had to change as well, and this is not possible in Git because our current branch still points to the same commit.
 
 So what Rebase really does is:  
 
-1. Copy commits from current branch till the common commit of both branches and modify its parents, this way, the first commit of the current branch will be copied but the parent will be the last
-commit of the <branchToRebase> branch. This means new hashcode = **NEW COMMIT**.
+1. Copy commits from current branch till the common commit of both branches and modify its parents, this way, the first commit of the current branch will be copied but the parent will be the last commit of the <branch-to-rebase> branch. This means new hashcode = **NEW COMMIT**.
 2. When all new commits are created, Git moves the branch to the copy of the las commit.
 3. Git leaves the original commits in its state with no branch referencing them.
 
 **¡REBASE CREATES NEW COMMITS!**
 
-Here comes the **garbage collector**. Now, original commits are almost impossible to reach again. 
-Git takes some time to check unreachable objects like commits and blobs and delete them. 
+Here comes the **garbage collector**. Now, original commits are almost impossible to reach again. Git takes some time to check unreachable objects like commits and blobs and delete them. 
 
 Why do we have 2 methods to get the content together?
 
-- **merge**:
-    + keeps the project's history.
-    - merge can result less simple when working with big projects with lots of branches.
-- **rebase**:
-    + project looks more like a single line.
-    + refactor history making it looking better.
-    - the history is not real.
-    
+**merge**:
+
+- pro :) preserves history, and this is very important, because git history can be seen graphically, and it will tell us the real story of the project.
+- con :( merge can result less simple when working with big projects with lots of branches.
+
+**rebase**:
+
+- pro :) project looks simpler, like a single time line
+- pro :) refactor history making it looking better.
+- con :( history is not real
+- con :( can cause some issues when working distributedly, we'll see later
+
 If we have doubts between merge and rebase, **use merge**.
 
-## TAGS (part2)	
+#### Tags, part 2
+
 Tags are saved at *.git/refs/tags/* folder.
 
-- **non-annotated** (regular) tags: `git tag <tagName>`  
-    If we open any, we could check that a tag is a reference to an object, like branches. If we move this file to the *.git/refs/heads/*, we transform the tag into a branch.
-- **annotated** tags: `git tag <tagName>`  
-    Similar but the file contains the hashCode of the tag object, and that object is a reference to a commit.
+- **non-annotated** (regular) tags: `git tag <tagName>`: if we open any, we could check that a tag is a reference to an object, like branches. If we move this file to the *.git/refs/heads/*, we transform the tag into a branch. I mean, this command creates a tag that is a file which content is the hash of a commit.
+- **annotated** tags: `git tag -a <tagName>`: similar but the file contains the hashCode of a tag object, and that object is a reference to a commit. It creates a git object.
     
- What is the difference between branches and tags?
->A tag is like a branch that does not move. So if we make new commits, the branch will point to the latest commit but the tag will remain 
-pointing to its original commit.
+What is the difference between branches and tags? A tag is like a branch that does not move. So if we make new commits, the branch will point to the latest commit but the tag will remain pointing to its original commit.
 		
 ## GIT IS A DISTRIBUTED VERSION CONTROL SYSTEM
 When we use "clone" command, Git adds a few lines to our configuration file for the repository *.git/config*.

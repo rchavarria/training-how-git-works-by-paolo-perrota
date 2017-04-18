@@ -238,7 +238,8 @@ Tags are saved at *.git/refs/tags/* folder.
     
 What is the difference between branches and tags? A tag is like a branch that does not move. So if we make new commits, the branch will point to the latest commit but the tag will remain pointing to its original commit.
 		
-## GIT IS A DISTRIBUTED VERSION CONTROL SYSTEM
+## Distribute version control
+
 When we use "clone" command, Git adds a few lines to our configuration file for the repository *.git/config*.
 Each Git repo can remember info about other copies which we call **remote**.  Git defines a default remote repo **origin**, and also a branch called **master** that maps over the master branch of the remote.
 
@@ -249,43 +250,50 @@ Each Git repo can remember info about other copies which we call **remote**.  Gi
 - `git show-ref <branchName>` shows the commit which the branch is pointing at. If we write "master", Git will printout al branches that contains "master" (local and remote).
 
 #### Synchronizing repositories
+
+When we clone, git adds a *remote*. That's a reference to the remote repo. It just clone the default branch. Other branches are kept in `.git/packed_refs`, just in case you need to pull them. Local branches live at `.git/refs/heads`, remote ones live at `.git/refs/remotes/<remote-name>`.
+
 When we clone, we copy the objects from the origin repository to our local. But this is a bit tricky.
 So if we make a new commit in local:
 
-- `git log -1`
+```
+$ git log -1
 
-		`commit 066deb4f117a22bbe9ec4ddba1669b4fabe831d5`  
-		`Author: autorName <autor@email.com> `  
-		`Date:   Tue Apr 4 10:42:11 2017 +0200`  
-		`<new commit message>`
+commit 066deb4f117a22bbe9ec4ddba1669b4fabe831d5  
+Author: autorName <autor@email.com> 
+Date:   Tue Apr 4 10:42:11 2017 +0200 
+<new commit message>
 
-- `git show-ref master`
+$ git show-ref master
 
-		`066deb4f117a22bbe9ec4ddba1669b4fabe831d5 refs/heads/master`    
-		`e42d61410e311f9b2cbfdad40a7323e936a68d76 refs/remotes/origin/master`  
+066deb4f117a22bbe9ec4ddba1669b4fabe831d5 refs/heads/master 
+e42d61410e311f9b2cbfdad40a7323e936a68d76 refs/remotes/origin/master 
+```
 
 We can see that our local branch "master" is pointing to our last commit, but "origin/master" branch is not. `git push` to update remote repo and then: 
 
-- `git show-ref master`
+```
+$ git show-ref master
 
-		`066deb4f117a22bbe9ec4ddba1669b4fabe831d5 refs/heads/master`  
-		`066deb4f117a22bbe9ec4ddba1669b4fabe831d5 refs/remotes/origin/master`
+066deb4f117a22bbe9ec4ddba1669b4fabe831d5 refs/heads/master 
+066deb4f117a22bbe9ec4ddba1669b4fabe831d5 refs/remotes/origin/master
+```
 
-Both branches points now to our last commit.
+Both branches points now to our last commit. `git push` sends new objects (new commits, branches,...) to the remote repo, and updates branches to reflect local branches.
 
 What if we have some local commits and remote branch has different history with new commits? If we push, there will be a conflict. There are 2 options to solve this:
 
-1. **not recommended**: `git push -f` *-f* means force!  
-We force Git to copy our history to the remote, so remote branch will point to our last commit and all other commits that remote had, will be removed by the garbage collector.
-2. **recommended**: solve conflicts in our local repository before git push.
-    1. `git fetch` will copy in our local repo the remote new history and changes the *origin/master* (our local) pointer to the same as remote, so now our local *master* branch will point to a different commit than *origin/master*.
-    2. `git merge origin/master` create new object which our local will point to.
+1. **not recommended**: `git push -f`: **-f** means force! We force Git to copy our history to the remote, so remote branch will point to our last commit and all other commits that remote had, will be removed by the garbage collector. This may cause issues to our coworkers.
+2. **recommended**: solve conflicts in our local repository before `git push`.
+    1. `git fetch` will copy in our local repo the remote new history and changes the `origin/master` (our local) pointer to the same as remote, so now our local `master` branch will point to a different commit than `origin/master`.
+    2. `git merge origin/master` create new object which our local will point to. It merges the branch `origin/master` (the same as the remote `master` branch) into our local `master` branch.
     3. `git push` copy our history without conflicts to remote repo and sets te remote branch to the same object as our local object created before with `git merge origin/master`.
-As this procedure is so common (`git fetch` + `git merge origin/master`), there exist a command that makes both.
-	
-	- `git pull`
+
+As this procedure is so common (`git fetch` + `git merge origin/master`), there exist a command that makes both: `git pull`
 
 So now we can do just `git pull` + `git push`
+
+Never rebase shared objects, objects that have been pushed to a repo shared with others.
 
 [autor profile link]: https://app.pluralsight.com/profile/author/paolo-perrotta "PluralSight profile"
 [course link]: https://app.pluralsight.com/library/courses/how-git-works/table-of-contents "How git works"
